@@ -9,5 +9,5 @@ class Payment(models.Model):
     status = models.BooleanField(default=True)
 
 def __str__(self):
-    return self.payment_method
+    return self.value
 

@@ -1,7 +1,8 @@
 from django.db import models
 
-# Create your models here.
-class Booking(models.Model):   
+
+
+class Booking(models.Model):
     date_booking = models.DateTimeField()
     date_start = models.DateTimeField()
     date_end = models.DateTimeField()
@@ -9,5 +10,6 @@ class Booking(models.Model):
     status = models.CharField(max_length=30, default='Reservado')
     customer = models.ForeignKey('customers.Customer', on_delete=models.CASCADE)
 
-def __str__(self):
-    return self.value
+    def __str__(self):
+        return f"{self.id} - {self.customer.full_name} - {self.value}"
+

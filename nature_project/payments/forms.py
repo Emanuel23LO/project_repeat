@@ -4,7 +4,7 @@ from bookings.models import Booking
 
 
 class PaymentForm(forms.ModelForm):
-    booking = forms.ModelChoiceField(queryset=Booking.objects.all().order_by('date_booking'))
+    booking = forms.ModelChoiceField(queryset=Booking.objects.all().order_by('id'), label='Reserva')
     class Meta:
         model = Payment
         fields = "__all__"
@@ -13,7 +13,7 @@ class PaymentForm(forms.ModelForm):
             'payment_method': 'Metodo de pago',
             'date': 'Fecha ',
             'value': 'valor',   
-            'booking.id': 'Reserva' 
+            'booking': 'Reserva' 
         }
         widgets = {
             'payment_method': forms.TextInput(attrs={'placeholder': 'Ingresa metodo de pago'}),      
