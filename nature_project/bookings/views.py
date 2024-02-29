@@ -11,6 +11,10 @@ from booking_services.models import Booking_service
 from payments.models import Payment
 from django.db import IntegrityError
 from django.utils import timezone
+from io import BytesIO
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from django.http import HttpResponse
 
 def bookings(request):    
     bookings_list = Booking.objects.all()    
@@ -51,7 +55,7 @@ def create_booking(request):
                 status='Reservado',
                 customer_id=request.POST['customer']
             )
-            booking.save()        
+            
             cabins_Id = request.POST.getlist('cabinId[]')
             cabins_value = request.POST.getlist('cabinValue[]')
             services_Id = request.POST.getlist('serviceId[]')
@@ -73,15 +77,63 @@ def create_booking(request):
                     service=service,
                     value=services_value[i]
                 )
-                booking_service.save()              
-            
-            messages.success(request, 'Reserva creada con éxito.')
+                booking_service.save()
+
+            # Redirigir primero a 'bookings'
             return redirect('bookings')
+            
         except ValueError:
             error_message = 'Las fechas ingresadas no son válidas.'
             return render(request, 'bookings/create.html', {'error_message': error_message, 'customers_list': customers_list , 'cabins_list': cabins_list, 'services_list': services_list})
 
     return render(request, 'bookings/create.html', {'customers_list': customers_list , 'cabins_list': cabins_list, 'services_list': services_list})
+
+def generate_pdf(request, booking_id):
+   # Obtener la reserva detallada
+    booking = Booking.objects.get(pk=booking_id)
+    booking_cabins = Booking_cabin.objects.filter(booking=booking)
+    booking_services = Booking_service.objects.filter(booking=booking)
+
+    # Crear el PDF
+    buffer = BytesIO()
+    p = canvas.Canvas(buffer, pagesize=letter)
+
+    # Agregar contenido al PDF
+    p.drawString(100, 750, 'Detalles de la reserva:')
+    p.drawString(100, 730, f'ID de la reserva: {booking.id}')
+    p.drawString(100, 710, f'Fecha de inicio: {booking.date_start}')
+    p.drawString(100, 690, f'Fecha de fin: {booking.date_end}')
+    p.drawString(100, 670, f'Valor: {booking.value}')
+    p.drawString(100, 650, f'Estado: {booking.status}')
+
+    # Obtener y agregar detalles de las cabañas reservadas
+    p.drawString(100, 630, 'Cabañas reservadas:')
+    y_position = 610
+    for booking_cabin in booking_cabins:
+        cabin = booking_cabin.cabin
+        p.drawString(120, y_position, f'Nombre: {cabin.name}')
+        p.drawString(120, y_position - 20, f'Descripción: {cabin.description}')
+        p.drawString(120, y_position - 40, f'Valor: {booking_cabin.value}')
+        y_position -= 80
+
+    # Obtener y agregar detalles de los servicios reservados
+    p.drawString(100, y_position - 20, 'Servicios reservados:')
+    y_position -= 40
+    for booking_service in booking_services:
+        service = booking_service.service
+        p.drawString(120, y_position, f'Nombre: {service.name}')
+        p.drawString(120, y_position - 20, f'Valor: {booking_service.value}')
+        y_position -= 40
+
+    # Cierra el lienzo
+    p.showPage()
+    p.save()
+
+    buffer.seek(0)
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="reserva.pdf"'
+    
+    return response
 
 def detail_booking(request, booking_id):
     booking = Booking.objects.get(pk=booking_id)
