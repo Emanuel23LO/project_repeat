@@ -6,24 +6,46 @@ from .forms import PaymentForm
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from bookings.models import Booking
+from datetime import datetime
+from django.db import models
 
 
 
 
-@receiver(post_save, sender=Payment)
-def status_reservation(sender, instance, created, **kwargs):
-    booking = Booking.objects.get(pk=instance.booking_id)
-    valor_reserva = booking.value
-    if instance.value > 0.5 * valor_reserva:
-        texto = 'pagado'
-    elif instance.value >= 0.5:
-        texto = 'confirmado'
-    elif instance.value <= 0:
-        texto = 'cancelado'
+
+def payment_booking(request, id):
+    booking = Booking.objects.get(id=id)
+    total_payments = Payment.objects.filter(booking_id=id).aggregate(total=models.Sum('value'))
+    if total_payments['total'] is not None:
+        total_payments = total_payments['total']
     else:
-        texto= 'reservado'
+        total_payments = 0    
+    if request.method == 'POST':
+        payment_method = request.POST['payment_method']
+        date = datetime.now().date()
+        value = request.POST['value']
+        payment_booking = request.POST['payment_booking']
+        payment = Payment.objects.create(
+            payment_method = payment_method,
+            date=date,
+            value=int(value),
+            booking=booking,
+            status=True
+        )
+        try:
+            payment.save()     
+            total_p = Payment.objects.filter(booking_id=id).aggregate(total=models.Sum('value'))       
+            if  int(total_p['total']) >= (booking.value / 2) and int(total_p['total']) < booking.value:
+                booking.status = 'Reservado'
+            elif int(total_p['total']) >= booking.value:
+                booking.status = 'En ejecución'        
+            booking.save()
+            return redirect('bookings') 
+        
+        except Exception as e:
+            return redirect('bookings')         
+    return render(request, 'payment.html', {'booking': booking, 'total_payments': total_payments})
 
-    Booking.objects.filter(id=instance.booking_id).update(status=texto)
 
 def payments(request):    
     payments_list = Payment.objects.all()    
