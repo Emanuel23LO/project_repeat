@@ -3,7 +3,6 @@
 {% block title %}Nature_project{% endblock %}
 
 {% block content %}
-
 <div class="card shadow mb-4">
     <div class="card-header py-3">
         <h4 class="m-0 font-weight-bold text-primary">Reservas</h4>
@@ -38,14 +37,19 @@
                         <td>{{ booking.value }}</td>
                         <td>{{ booking.status }}</td>
                         <td>                            
-                            <a href="{% url 'detail_booking' booking.id %}" class="btn btn-info btn-circle btn-sm">
-                                <i class="fas fa-info-circle"></i></a>
+                            <a href="{% url 'detail_booking' booking.id %}" class="btn btn-info btn-circle btn-sm">                    
+                                <i class="fas fa-info-circle"></i>
+                            </a>
                             <a href="{% url 'edit_booking' booking.id %}" class="btn btn-warning btn-circle btn-sm">
                                 <i class="fas fa-edit"></i>
                             </a>
                             <a href="{% url 'delete_booking' booking.id %}" class="btn btn-danger btn-circle btn-sm">
                                 <i class="fas fa-trash"></i>
                             </a>
+                            <form action="{% url 'generate_pdf' booking.id %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-circle btn-sm"> PDF </button>
+                            </form>
                         </td>
                     </tr>
                     {% endfor %}
