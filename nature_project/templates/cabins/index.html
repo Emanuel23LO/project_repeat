@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block title %}glammping house{% endblock %}
+
+{% block content %}
+
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h4 class="m-0 font-weight-bold text-primary">Cabañas</h4>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <a href="{% url 'create_cabin' %}" class="btn btn-primary btn-icon-split mb-3">
+                <span class="icon text-white-50">
+                    <i class="fas fa-plus"></i>
+                </span>
+                <span class="text">Crear Cabaña</span>
+            </a>
+            <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                <thead class="table-success ">
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Capacidad</th>
+                        <th>Descripciòn</th>
+                        <th>Valor</th>  
+                        <th>Imagen</th>
+                        <th>Tipo Cabaña</th>      
+                        <th>Estado</th>     
+                        <th>Acciones</th>    
+                          
+                    </tr>
+                </thead>                
+                <tbody>
+                    {% for cabin in cabins_list %}
+                    <tr>
+                    <td>{{ cabin.name }}</td>
+                    <td>{{ cabin.capacity }}</td>
+                    <td>{{ cabin.description }}</td>    
+                    <td>{{ cabin.value }}</td>
+                    <td><img src="{{ cabin.image.url }}" alt="" width="100"></td>
+                    <td>{{ cabin.cabin_type }}</td>    
+                    <td>
+                        <form action="{% url 'cabin_status' cabin.id %}" method="POST">
+                            {% csrf_token %}                            
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="customSwitch{{ forloop.counter }}" {% if cabin.status %} checked {% endif %} onchange="this.form.submit()">
+                                <label class="custom-control-label" for="customSwitch{{ forloop.counter }}"></label>
+                            </div>                     
+                        </form>
+                    </td>
+                    <td>
+                        <!-- detalle -->
+                        <a href="" class="btn btn-info btn-circle btn-sm" data-bs-toggle="modal" data-bs-target="#modalId" data-cabin-id="{{ cabin.id }}">
+                            <i class="fas fa-info-circle"></i>
+                        </a>
+                        <!-- editar -->
+                        <a href="{% url 'edit_cabin' cabin.id %}" class="btn btn-warning btn-circle btn-sm">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <!-- eliminar -->
+                        <a href="{% url 'delete_cabin' cabin.id %}" class="deleteBtn btn btn-danger btn-circle btn-sm">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                    </tr>
+                    {% endfor %}                                     
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="modalId" tabindex="-1" role="dialog" aria-labelledby="modalTitleId" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitleId">Detalles de la cabaña</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="container-fluid" id="cabin-details"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Función para cargar detalles del libro en el modal
+function loadCabinDetails(cabinId) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "{% url 'detail_cabin' 0 %}".replace('0', cabinId), true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4) {
+                if (xhr.status == 200) {
+                    var data = JSON.parse(xhr.responseText);
+                    console.log(data);
+                    // Actualizar el contenido del modal con los detalles del libro
+                    document.getElementById("cabin-details").innerHTML =
+                        "<p><strong>Nombre:</strong> " + data.name + "</p>" +
+                        "<p><strong>Capacidad:</strong> " + data.capacity + "</p>" +
+                        "<p><strong>Descripcion:</strong> " + data.description + 
+                        "<p><strong>Tipo Cabaña:</strong> " + data.cabin_type + 
+                        "<p><strong>Valor:</strong> " + data.value + "</p>";
+                    $('#modalId').modal('show'); // Mover esta línea aquí
+                } else {
+                    console.error('Error fetching cabin details. Status code: ' + xhr.status);
+                }
+            }
+        };
+        xhr.send();
+    }
+
+    // Asignar evento click a los botones de detalle del libro
+    document.addEventListener("click", function (event) {
+        if (event.target && event.target.dataset.cabinId) {
+            event.stopPropagation();
+            var cabinId = event.target.dataset.cabinId;
+            loadCabinDetails(cabinId);
+        }
+    });
+
+</script>
+
+
+<!--eliminar-->
+<script>
+    document.querySelectorAll('.deleteBtn').forEach(function(deleteBtn) {
+    deleteBtn.addEventListener('click', function (event) {
+        event.preventDefault(); 
+
+        swal({
+            title: "Estás seguro que deseas eliminar?",            
+            icon: "warning",
+            buttons: true,
+            dangerMode: true,
+        })
+        .then((willDelete) => {
+            if (willDelete) {                
+                window.location.href = this.getAttribute('href');              
+            }
+        });
+    });
+});
+</script>
+
+{% if messages %}
+    {% for message in messages %}
+        <script>
+            swal({                
+                text: "{{ message }}",
+                icon: "{{ message.tags }}",
+                button: "OK",
+            });
+        </script>
+    {% endfor %}
+{% endif %}
+
+
+
+{% endblock %}

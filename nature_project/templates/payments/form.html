@@ -1,0 +1,22 @@
+<form action="" method="POST">
+    {% csrf_token %}
+  
+    {% for field in form %}
+    <div class="mb-3">
+      <label for="" class="form-label">{{field.label}}</label>
+      {% if field.name == 'booking'%}
+        <select class="form-control" name="{{field.name}}" id="">
+            {% for choice in field.field.choices %}
+                <option value="{{choice.0}}">{{choice.1}}</option>
+            {% endfor %}
+        </select>
+      {% else %}
+      <input type="{{field.field.widget.input_type}}"
+        class="form-control" name="{{field.name}}" id="" aria-describedby="helpId" placeholder="{{field.field.widget.attrs.placeholder}}">
+        <small id="helpId" class="form-text text-danger">{{field.errors}}</small>        
+        {% endif %}
+    </div>
+    {% endfor %}
+    
+    <button type="submit" class="btn btn-primary">Enviar</button>
+  </form>
