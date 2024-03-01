@@ -46,10 +46,14 @@
                             <a href="{% url 'delete_booking' booking.id %}" class="btn btn-danger btn-circle btn-sm">
                                 <i class="fas fa-trash"></i>
                             </a>
+                            <a href="{% url 'payment_booking' booking.id %}" class="btn btn-primary btn-circle btn-sm">
+                                <i class="fas fa-plus"></i>
+                            </a>
                             <form action="{% url 'generate_pdf' booking.id %}" method="post">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-danger btn-circle btn-sm"> PDF </button>
                             </form>
+
                         </td>
                     </tr>
                     {% endfor %}
