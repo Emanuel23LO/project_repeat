@@ -56,7 +56,7 @@ def create_booking(request):
                 status='Reservado',
                 customer_id=request.POST['customer']
             )
-            
+            booking.save()        
             cabins_Id = request.POST.getlist('cabinId[]')
             cabins_value = request.POST.getlist('cabinValue[]')
             services_Id = request.POST.getlist('serviceId[]')
@@ -78,11 +78,10 @@ def create_booking(request):
                     service=service,
                     value=services_value[i]
                 )
-                booking_service.save()
-
-            # Redirigir primero a 'bookings'
-            return redirect('bookings')
+                booking_service.save()              
             
+            messages.success(request, 'Reserva creada con éxito.')
+            return redirect('bookings')
         except ValueError:
             error_message = 'Las fechas ingresadas no son válidas.'
             return render(request, 'bookings/create.html', {'error_message': error_message, 'customers_list': customers_list , 'cabins_list': cabins_list, 'services_list': services_list})
