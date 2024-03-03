@@ -36,11 +36,13 @@
                     <tbody>
                         {% for cabin in cabins %}
                         <tr>
-                            <td>{{ cabin.cabin.name }}</td>                         
-                            <td>{{ cabin.cabin.description }}</td>
-                            <td>{{ cabin.cabin.value }}</td>
-                            <th><a href="">Eliminar</a></th>                        
-                        </tr>
+                            <td>{{ cabin.name }}</td>                         
+                            <td>{{ cabin.description }}</td>
+                            <td>{{ cabin.value }}</td>
+
+                            <t><a href="">Eliminar</a></t>                        
+
+                                                 </tr>
                         {% endfor %}
                     </tbody>
                 </table>            
@@ -60,9 +62,9 @@
                     <tbody>
                         {% for service in services %}
                         <tr>
-                            <td>{{ service.service.name }}</td>                         
-                            <td>{{ service.service.description }}</td>
-                            <td>{{ service.service.value }}</td>
+                            <td>{{ service.name }}</td>                         
+                            <td>{{ service.description }}</td>
+                            <td>{{ service.value }}</td>
                             <th><a href="">Eliminar</a></th>                        
                         </tr>
                         {% endfor %}
@@ -116,13 +118,14 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th scope="col">Descripción</th>
+                    <th scope="col">Cabaña</th>
                     <th scope="col">Precio</th>
-                    <th scope="col"></th>
+                    <th scope="col">Eliminar</th>
                 </tr>
             </thead>
             <tbody id="bookings">
-                <!-- Aquí puedes incluir los detalles de la reserva si es necesario -->
+                
+     <!-- Aquí puedes incluir los detalles de la reserva si es necesario -->
             </tbody>
             <thead>
                 <tr>
@@ -130,6 +133,9 @@
                     <th scope="col"><input class="text-success font-weight-bold" style="border: none;" type="text" name="totalValue" id="totalValue" readonly></th>
                     <th></th>
                 </tr>
+            </thead>
+            <thead>
+                
             </thead>
         </table>
     </div>
@@ -215,5 +221,6 @@ function removeBooking(event, type) {
     total -= value;
     $('#totalValue').val(total);
 }
+
 </script>
 {% endblock %}
