@@ -28,8 +28,8 @@
                     <thead class="table-dark">
                         <tr> 
                             <th>Cabaña</th>
-                            <th>Descripción</th>
                             <th>Valor</th>
+                            <th>Eliminar</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -41,7 +41,9 @@
                                 <td>{{cabin.name}}</td>
                                 <td>{{cabin.value}}</td>
                                 <td>
-                                    <button onclick="removeBooking(event)"> <i class="fas fa-trash"></i></button> 
+                                    <button onclick="removeBooking(event)" class="btn btn-danger btn-circle btn-sm">
+                                        <i class="fas fa-trash"></i>
+                                    </button> 
                                 </td>
                                 
                             </tr>
@@ -56,8 +58,8 @@
                     <thead class="table-dark">
                         <tr> 
                             <th>Servicio</th>
-                            <th>Imagen</th>
                             <th>Valor</th>
+                            <th>Eliminar</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -70,7 +72,9 @@
                             <td>{{service.value}}</td>  
                           
                             <td>
-                              <button onclick="removeBooking(event)"> <i class="fas fa-trash"></i></button> 
+                                <button onclick="removeBooking(event)" class="btn btn-danger btn-circle btn-sm">
+                                    <i class="fas fa-trash"></i>
+                                </button> 
                             </td>
                         </tr>
 
@@ -214,7 +218,7 @@ function totalBooking(value) {
     total += value;
     $('#totalValue').val(total);
 }
-
+    
 function removeBooking(event, type) {
     event.preventDefault();        
     let element = event.target.parentElement.parentElement.parentElement;
@@ -229,6 +233,8 @@ function removeBooking(event, type) {
     total -= value;
     $('#totalValue').val(total);
 }
+
+
 
 
 
