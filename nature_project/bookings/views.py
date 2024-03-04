@@ -142,6 +142,13 @@ def detail_booking(request, booking_id):
     payments = Payment.objects.filter(booking=booking)
     return render(request, 'bookings/detail.html', {'booking': booking, 'booking_cabins': booking_cabins, 'booking_services': booking_services, 'payments': payments})
 
+def detail_booking(request, booking_id):
+    booking = Booking.objects.get(pk=booking_id)
+    booking_cabins = Booking_cabin.objects.filter(booking=booking)
+    booking_services = Booking_service.objects.filter(booking=booking)
+    payments = Payment.objects.filter(booking=booking)
+    return render(request, 'bookings/detail.html', {'booking': booking, 'booking_cabins': booking_cabins, 'booking_services': booking_services, 'payments': payments})
+
 
 
 def delete_booking(request, booking_id):
