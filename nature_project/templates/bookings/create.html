@@ -45,7 +45,7 @@
                 <select class="form-control" name="cabin" id="">
                     <option value="">Selecciona una cabaña</option>
                     {% for cabin in cabins_list %}
-                    <option value="{{cabin.id}}">{{cabin.name}} - {{cabin.value}}</option>
+                    <option value="{{cabin.id}}">{{cabin.name}} - {{cabin.value}} </option>
                     {% endfor %}
                 </select>
                 <a href="" onclick="addCabin(event)" class="btn btn-primary btn-icon-split mb-3">

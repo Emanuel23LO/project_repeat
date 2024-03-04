@@ -167,6 +167,7 @@ def edit_booking(request, booking_id):
         date_end_str = request.POST.get('date_end', '')        
         date = datetime.strptime(date_str, '%Y-%m-%d')
         date_end = datetime.strptime(date_end_str, '%Y-%m-%d')
+        value = booking.value
 
         # Print después de asignar valores
         print("Date Start:", date_str)
@@ -181,7 +182,6 @@ def edit_booking(request, booking_id):
         booking.customer_id = request.POST.get('customer', '')
         
         # Guardar los cambios en la base de datos      
-
         # Actualizar los objetos relacionales Cabin y Service
         booking_cabins = Booking_cabin.objects.filter(booking=booking)
         booking_services = Booking_service.objects.filter(booking=booking)
@@ -211,10 +211,12 @@ def edit_booking(request, booking_id):
                 value=service_value
             )
             booking_service.save()
-              
+
         # Redireccionar a la página de listado de reservas con un mensaje de éxito
         messages.success(request, 'Reserva editada con éxito.')
         return redirect('bookings')
     
     # Si la solicitud es GET, renderizar el formulario de edición con los datos del objeto booking
     return render(request, 'bookings/edit.html', {'booking': booking, 'customers_list': customers_list, 'cabins_list': cabins_list, 'services_list': services_list, 'cabins': cabins, 'services': services })
+
+

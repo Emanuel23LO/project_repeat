@@ -5,7 +5,7 @@
     <div class="card-header py-3 mb-3">
         <h4 class="m-0 font-weight-bold text-primary">Editar reserva de cabañas y servicios</h4>
     </div>
-    <form action="" method="post">
+    <form action="" method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="d-flex">
             <div class="mb-3">
@@ -28,21 +28,25 @@
                     <thead class="table-dark">
                         <tr> 
                             <th>Cabaña</th>
-                            <th>Descripción</th>
                             <th>Valor</th>
+                            <th>Eliminar</th>
                             <th></th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for cabin in cabins %}
-                        <tr>
-                            <td>{{ cabin.name }}</td>                         
-                            <td>{{ cabin.description }}</td>
-                            <td>{{ cabin.value }}</td>
+                        <tr id="{{cabin.id}}">
 
-                            <t><a href="">Eliminar</a></t>                        
-
-                                                 </tr>
+                            <!-- campos de la fila  -->
+                                <td>{{cabin.name}}</td>
+                                <td>{{cabin.value}}</td>
+                                <td>
+                                    <button onclick="removeBooking(event)" class="btn btn-danger btn-circle btn-sm">
+                                        <i class="fas fa-trash"></i>
+                                    </button> 
+                                </td>
+                                
+                            </tr>
                         {% endfor %}
                     </tbody>
                 </table>            
@@ -54,19 +58,27 @@
                     <thead class="table-dark">
                         <tr> 
                             <th>Servicio</th>
-                            <th>Descripción</th>
                             <th>Valor</th>
+                            <th>Eliminar</th>
                             <th></th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for service in services %}
-                        <tr>
-                            <td>{{ service.name }}</td>                         
-                            <td>{{ service.description }}</td>
-                            <td>{{ service.value }}</td>
-                            <th><a href="">Eliminar</a></th>                        
+                        <tr id="{{service.id}}">
+
+                            <!-- campos de la fila -->
+                            <td>{{service.name}}</td>
+                            <td>{{service.value}}</td>  
+                          
+                            <td>
+                                <button onclick="removeBooking(event)" class="btn btn-danger btn-circle btn-sm">
+                                    <i class="fas fa-trash"></i>
+                                </button> 
+                            </td>
                         </tr>
+
+                        
                         {% endfor %}
                     </tbody>
                 </table>            
@@ -135,7 +147,7 @@
                 </tr>
             </thead>
             <thead>
-                
+               
             </thead>
         </table>
     </div>
@@ -206,7 +218,7 @@ function totalBooking(value) {
     total += value;
     $('#totalValue').val(total);
 }
-
+    
 function removeBooking(event, type) {
     event.preventDefault();        
     let element = event.target.parentElement.parentElement.parentElement;
@@ -221,6 +233,10 @@ function removeBooking(event, type) {
     total -= value;
     $('#totalValue').val(total);
 }
+
+
+
+
 
 </script>
 {% endblock %}

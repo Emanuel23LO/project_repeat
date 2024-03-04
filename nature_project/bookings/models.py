@@ -1,7 +1,5 @@
 from django.db import models
 
-
-
 class Booking(models.Model):
     date_booking = models.DateTimeField()
     date_start = models.DateTimeField()
@@ -13,3 +11,4 @@ class Booking(models.Model):
     def __str__(self):
         return f"{self.id} - {self.customer.full_name} - {self.value}"
 
+    
