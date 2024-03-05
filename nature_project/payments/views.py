@@ -8,9 +8,36 @@ from django.dispatch import receiver
 from bookings.models import Booking
 from datetime import datetime
 from django.db import models
+from io import BytesIO
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+from django.http import HttpResponse
+from datetime import datetime
 
+# def generate_payment_pdf(request, payment_id):
+#     # Obtener el pago detallado
+#     payment = Payment.objects.get(pk=payment_id)
 
+#     # Crear el PDF
+#     buffer = BytesIO()
+#     p = canvas.Canvas(buffer, pagesize=letter)
 
+#     # Agregar contenido al PDF
+#     p.drawString(100, 750, 'Detalles del pago:')
+#     p.drawString(100, 730, f'ID del pago: {payment.id}')
+#     p.drawString(100, 710, f'Método de pago: {payment.payment_method}')
+#     p.drawString(100, 690, f'Fecha: {payment.date}')
+#     p.drawString(100, 670, f'Valor: {payment.value}')
+
+#     # Cierra el lienzo
+#     p.showPage()
+#     p.save()
+
+#     buffer.seek(0)
+#     response = HttpResponse(buffer, content_type='application/pdf')
+#     response['Content-Disposition'] = 'attachment; filename="pago.pdf"'
+    
+#     return response
 
 
 def payment_booking(request, id):

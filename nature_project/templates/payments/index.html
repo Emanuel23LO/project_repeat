@@ -57,7 +57,10 @@
                         <a href="{% url 'delete_payment' payment.id %}" class="deleteBtn btn btn-danger btn-circle btn-sm">
                             <i class="fas fa-trash"></i>
                         </a>
-
+                        <form action="{% url 'generate_pdf' payment.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-circle btn-sm"> PDF </button>
+                        </form>
                     </td>
                     </tr>
                     {% endfor %}

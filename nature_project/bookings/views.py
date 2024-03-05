@@ -1,3 +1,4 @@
+
 from datetime import datetime
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -12,9 +13,16 @@ from payments.models import Payment
 from django.db import IntegrityError
 from django.utils import timezone
 from io import BytesIO
-from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from django.http import HttpResponse
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib import colors
+from reportlab.lib.units import inch
+from reportlab.lib.utils import ImageReader
+from django.conf import settings
+import os
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
 
 
 def bookings(request):    
@@ -88,51 +96,76 @@ def create_booking(request):
 
     return render(request, 'bookings/create.html', {'customers_list': customers_list , 'cabins_list': cabins_list, 'services_list': services_list})
 
+
 def generate_pdf(request, booking_id):
-   # Obtener la reserva detallada
+    # Obtener la reserva detallada
     booking = Booking.objects.get(pk=booking_id)
     booking_cabins = Booking_cabin.objects.filter(booking=booking)
     booking_services = Booking_service.objects.filter(booking=booking)
 
     # Crear el PDF
     buffer = BytesIO()
-    p = canvas.Canvas(buffer, pagesize=letter)
+    doc = SimpleDocTemplate(buffer, pagesize=letter, leftMargin=0.75*inch)
+    styles = getSampleStyleSheet()
+
+    # Definir estilo de párrafo para el título principal
+    title_style = ParagraphStyle(name='Title', fontSize=24, textColor='grey', alignment=1)
+
+    # Contenido del PDF
+    content = []
+
+    logo_path = os.path.join(settings.STATICFILES_DIRS[0], 'img_new', 'logo_glammping.jpg')  # Utiliza el primer directorio de archivos estáticos
+    logo = Image(logo_path)
+    logo.drawWidth = 1.5 * inch  # Ajusta el ancho de la imagen según sea necesario
+    logo.drawHeight = 1.5 * inch  # Ajusta el alto de la imagen según sea necesario
+    content.append(Spacer(1, 24))  # Espacio entre el texto y la imagen
+    content.append(logo)
+
+    content.append(Spacer(1, 24))
+    # Agregar título principal al PDF
+    content.append(Paragraph('REPORTE DE RESERVA', title_style))
+
+    # Agregar espacios entre el título y el primer párrafo
+    content.append(Spacer(1, 24))  # Ajusta el espacio según sea necesario
 
     # Agregar contenido al PDF
-    p.drawString(100, 750, 'Detalles de la reserva:')
-    p.drawString(100, 730, f'ID de la reserva: {booking.id}')
-    p.drawString(100, 710, f'Fecha de inicio: {booking.date_start}')
-    p.drawString(100, 690, f'Fecha de fin: {booking.date_end}')
-    p.drawString(100, 670, f'Valor: {booking.value}')
-    p.drawString(100, 650, f'Estado: {booking.status}')
+    content.append(Paragraph('Detalles de la reserva:', styles['Heading1']))
+    content.append(Paragraph(f'ID de la reserva: {booking.id}', styles['Normal']))
+    content.append(Paragraph(f'Fecha de inicio: {booking.date_start}', styles['Normal']))
+    content.append(Paragraph(f'Fecha de fin: {booking.date_end}', styles['Normal']))
+    content.append(Paragraph(f'Valor: {booking.value}', styles['Normal']))
+    content.append(Paragraph(f'Estado: {booking.status}', styles['Normal']))
 
-    # Obtener y agregar detalles de las cabañas reservadas
-    p.drawString(100, 630, 'Cabañas reservadas:')
-    y_position = 610
+    # Agregar espacios entre cada párrafo
+    for _ in range(2):
+        content.append(Spacer(1, 12))  # Ajusta el espacio según sea necesario
+
+    # Agregar detalles de las cabañas reservadas
+    content.append(Paragraph('Cabañas reservadas:', styles['Heading1']))
     for booking_cabin in booking_cabins:
         cabin = booking_cabin.cabin
-        p.drawString(120, y_position, f'Nombre: {cabin.name}')
-        p.drawString(120, y_position - 20, f'Descripción: {cabin.description}')
-        p.drawString(120, y_position - 40, f'Valor: {booking_cabin.value}')
-        y_position -= 80
+        cabin_details = f'Nombre: {cabin.name}<br/>Descripción: {cabin.description}<br/>Valor: {booking_cabin.value}'
+        content.append(Paragraph(cabin_details, styles['Normal']))
 
-    # Obtener y agregar detalles de los servicios reservados
-    p.drawString(100, y_position - 20, 'Servicios reservados:')
-    y_position -= 40
+    # Agregar espacios entre cada párrafo
+    for _ in range(2):
+        content.append(Spacer(1, 12))  # Ajusta el espacio según sea necesario
+
+    # Agregar detalles de los servicios reservados
+    content.append(Paragraph('Servicios reservados:', styles['Heading1']))
     for booking_service in booking_services:
         service = booking_service.service
-        p.drawString(120, y_position, f'Nombre: {service.name}')
-        p.drawString(120, y_position - 20, f'Valor: {booking_service.value}')
-        y_position -= 40
+        service_details = f'Nombre: {service.name}<br/>Valor: {booking_service.value}'
+        content.append(Paragraph(service_details, styles['Normal']))
 
-    # Cierra el lienzo
-    p.showPage()
-    p.save()
+    # Construir el PDF
+    doc.build(content)
 
+    # Configurar la respuesta HTTP
     buffer.seek(0)
     response = HttpResponse(buffer, content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="reserva.pdf"'
-    
+
     return response
 
 def detail_booking(request, booking_id):
@@ -141,14 +174,6 @@ def detail_booking(request, booking_id):
     booking_services = Booking_service.objects.filter(booking=booking)
     payments = Payment.objects.filter(booking=booking)
     return render(request, 'bookings/detail.html', {'booking': booking, 'booking_cabins': booking_cabins, 'booking_services': booking_services, 'payments': payments})
-
-def detail_booking(request, booking_id):
-    booking = Booking.objects.get(pk=booking_id)
-    booking_cabins = Booking_cabin.objects.filter(booking=booking)
-    booking_services = Booking_service.objects.filter(booking=booking)
-    payments = Payment.objects.filter(booking=booking)
-    return render(request, 'bookings/detail.html', {'booking': booking, 'booking_cabins': booking_cabins, 'booking_services': booking_services, 'payments': payments})
-
 
 
 def delete_booking(request, booking_id):
@@ -160,8 +185,13 @@ def delete_booking(request, booking_id):
         messages.error(request, 'No se puede eliminar la reserva porque está asociado a otra tabla.')
     return redirect('bookings')
 
+from datetime import datetime
+from django.shortcuts import get_object_or_404
+from django.shortcuts import render
+from django.utils.dateparse import parse_date
+
 def edit_booking(request, booking_id):
-    booking = Booking.objects.get(pk=booking_id) 
+    booking = get_object_or_404(Booking, pk=booking_id) 
     cabins = Cabin.objects.filter(booking_cabin__booking=booking)
     services = Service.objects.filter(booking_service__booking=booking)
 
@@ -172,58 +202,41 @@ def edit_booking(request, booking_id):
     if request.method == 'POST':
         date_str = request.POST.get('date_start', '')
         date_end_str = request.POST.get('date_end', '')        
-        date = datetime.strptime(date_str, '%Y-%m-%d')
-        date_end = datetime.strptime(date_end_str, '%Y-%m-%d')
-        value = booking.value
+        date = parse_date(date_str)
+        date_end = parse_date(date_end_str)
 
-        # Print después de asignar valores
-        print("Date Start:", date_str)
-        print("Date End:", date_end_str)
-        print("Total Value:", request.POST.get('totalValue', ''))
-        print("Customer ID:", request.POST.get('customer', ''))
-
-        # Actualizar los campos del objeto booking con los valores recibidos del formulario
         booking.date_start = date
         booking.date_end = date_end
         booking.value = request.POST.get('totalValue', '')
         booking.customer_id = request.POST.get('customer', '')
         
-        # Guardar los cambios en la base de datos      
-        # Actualizar los objetos relacionales Cabin y Service
+        booking.save()
+        
         booking_cabins = Booking_cabin.objects.filter(booking=booking)
         booking_services = Booking_service.objects.filter(booking=booking)
-        payments = Payment.objects.filter(booking=booking)
-            
-        # Eliminar los objetos Cabin y Service existentes asociados a esta reserva
+        
         booking_cabins.delete()
         booking_services.delete()
 
-        # Crear nuevos objetos Cabin y Service con los valores actualizados
         for cabin_id in request.POST.getlist('cabinId[]'):
-            cabin = Cabin.objects.get(pk=cabin_id)
+            cabin = get_object_or_404(Cabin, pk=cabin_id)
             cabin_value = request.POST.get(f'cabinValue[{cabin_id}]', '')
             booking_cabin = Booking_cabin.objects.create(
                 booking=booking,
                 cabin=cabin,
                 value=cabin_value
             )
-            booking_cabin.save()
 
         for service_id in request.POST.getlist('serviceId[]'):
-            service = Service.objects.get(pk=service_id)
+            service = get_object_or_404(Service, pk=service_id)
             service_value = request.POST.get(f'serviceValue[{service_id}]', '')
             booking_service = Booking_service.objects.create(
                 booking=booking,
                 service=service,
                 value=service_value
             )
-            booking_service.save()
 
-        # Redireccionar a la página de listado de reservas con un mensaje de éxito
         messages.success(request, 'Reserva editada con éxito.')
         return redirect('bookings')
-    
-    # Si la solicitud es GET, renderizar el formulario de edición con los datos del objeto booking
+
     return render(request, 'bookings/edit.html', {'booking': booking, 'customers_list': customers_list, 'cabins_list': cabins_list, 'services_list': services_list, 'cabins': cabins, 'services': services })
-
-
