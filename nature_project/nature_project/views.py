@@ -12,18 +12,17 @@ from django.http import HttpResponse
 from django.contrib.auth import authenticate, login
 from customers.models import Customer
 import requests
-
-
-
-
+from cabins.models import Cabin
+from bookings.models import Booking
+from services.models import Service
 
 def index(request):
-    return render(request, 'index.html')
+    count = Cabin.objects.count()
+    count_booking = Booking.objects.filter(status = "Reservado").count()
+    return render(request, 'index.html', {"count":count, "count_booking": count_booking})
 
 def landing(request):
     return render(request, 'landing.html')
-
-
 
 oauth = OAuth()
 
@@ -62,15 +61,25 @@ def logout(request):
     )
 
 def logi(request):
+    # Obtenemos la sesión del usuario
+    session_data = request.session.get("user")
+    pretty_session_data = json.dumps(session_data, indent=4)
+
+    # Obtenemos todas las cabañas y servicios
+    cabins = Cabin.objects.filter(status=True) 
+    services = Service.objects.filter(status=True)
+
+    # Renderizamos la plantilla con ambos conjuntos de datos
     return render(
         request,
         "logi.html",
-        context={
-            "session": request.session.get("user"),
-            "pretty": json.dumps(request.session.get("user"), indent=4),
+        {
+            "session": session_data,
+            "pretty": pretty_session_data,
+            "cabins": cabins,
+            "services": services,
         },
     )
-
 
 
 def register(request):

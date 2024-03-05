@@ -19,7 +19,7 @@
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Jost:300,300i,400,400i,500,500i,600,600i,700,700i|Poppins:300,300i,400,400i,500,500i,600,600i,700,700i" rel="stylesheet">
 
   <!-- Vendor CSS Files -->
-  <link href="{% static 'assets/vendor/aos/aos.css" rel="stylesheet' %}">
+  <link href="{% static 'assets/vendor/aos/aos.css' %}" rel="stylesheet">
   <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
   <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
   <link href="{% static 'assets/vendor/boxicons/css/boxicons.min.css' %}" rel="stylesheet">
@@ -64,8 +64,7 @@
       <div class="row">
         <div class="col-lg-6 d-flex flex-column justify-content-center pt-4 pt-lg-0 order-2 order-lg-1" data-aos="fade-up" data-aos-delay="200">
           <h1>Glamping Nature Vip</h1>
-          <h2>Donde el lujo se encuentra con la naturaleza, ofreciendo una experiencia glamping
-             excepcional y servicios de primera calidad.</h2>
+          <h2>Donde el lujo se encuentra con la naturaleza, ofreciendo una experiencia glamping excepcional y servicios de primera calidad.</h2>
           <div class="d-flex justify-content-center justify-content-lg-start">
             <a href="{% url 'loginn' %}" class="btn-get-started scrollto">Reservar Ahora</a>
           </div>
@@ -80,102 +79,48 @@
 
   <main id="main">
 
-
-
     <!-- ======= Portfolio Section ======= -->
     <section id="portfolio" class="portfolio">
       <div class="container" data-aos="fade-up">
 
         <div class="section-title">
           <h2>Que ofrecemos</h2>
-          <p>En el Glamping Nature Vip podras encontrar desde unas hermosas cabañas en las cuales puedes hospedarte como
-            tambien tomar uno de nuestros multiples servicios!
-          </p>
+          <p>En el Glamping Nature Vip podrás encontrar desde unas hermosas cabañas en las cuales puedes hospedarte como también tomar uno de nuestros múltiples servicios!</p>
         </div>
-    <!-- =======  Cabañas ======= -->
+        
+        <!-- Filtros de cabañas y servicios -->
         <ul id="portfolio-flters" class="d-flex justify-content-center" data-aos="fade-up" data-aos-delay="100">
-          <li data-filter="*" class="filter-active">All</li>
+          <li data-filter="*" class="filter-active">Todos</li>
           <li data-filter=".filter-app">Cabañas</li>
           <li data-filter=".filter-card">Servicios</li>
-        </ul>
-          
+         </ul>
+        
+        <!-- Contenedor de cabañas y servicios -->
         <div class="row portfolio-container" data-aos="fade-up" data-aos-delay="200">
-
+          <!-- Mostrar las cabañas -->
+          {% for cabin in cabins %}
           <div class="col-lg-4 col-md-6 portfolio-item filter-app">
-            <div class="portfolio-img"><img src="{% static 'assets/img/domojfif.jfif' %}" class="img-fluid" alt=""></div>
+            <div class="portfolio-img"><img src="{{ cabin.image.url }}" class="img-fluid" alt=""></div>
             <div class="portfolio-info">
-              <h4>Cabaña</h4>
-              <p>Tipo domo</p>
+              <h4>{{ cabin.name }}</h4>
+              <p>{{ cabin.description }}</p>
+              <p>$ {{ cabin.value}}</p>
+
             </div>
           </div>
-
-          <div class="col-lg-4 col-md-6 portfolio-item filter-app">
-            <div class="portfolio-img"><img src="{% static 'assets/img/casa_arbol.jfif' %}" class="img-fluid" alt=""></div>
-            <div class="portfolio-info">
-              <h4>Cabaña</h4>
-              <p>Tipo casa del arbol</p>
-            </div>
-          </div>
-
-          <div class="col-lg-4 col-md-6 portfolio-item filter-app">
-            <div class="portfolio-img"><img src="{% static 'assets/img/glamping_alpina.jpeg' %}" class="img-fluid" alt=""></div>
-            <div class="portfolio-info">
-              <h4>Cabaña</h4>
-              <p>Tipo Alpina</p>
-            </div>
-          </div>
-
-          <div class="col-lg-4 col-md-6 portfolio-item filter-app">
-            <div class="portfolio-img"><img src="{% static 'assets/img/safari.jpg' %}" class="img-fluid" alt=""></div>
-            <div class="portfolio-info">
-              <h4>Cabaña</h4>
-              <p>Tipo Safari</p>
-            </div>
-          </div>
-
-          <div class="col-lg-4 col-md-6 portfolio-item filter-app">
-            <div class="portfolio-img"><img src="{% static 'assets/img/tipis.jfif' %}" class="img-fluid" alt=""></div>
-            <div class="portfolio-info">
-              <h4>Cabaña</h4>
-              <p>Tipo Tipis</p>
-            </div>
-          </div>
-
-          <div class="col-lg-4 col-md-6 portfolio-item filter-app">
-            <div class="portfolio-img"><img src="{% static 'assets/img/eco_lodge.jfif' %}" class="img-fluid" alt=""></div>
-            <div class="portfolio-info">
-              <h4>Cabaña</h4>
-              <p>Tipo Eco Lodge</p>
-            </div>
-          </div>
-              <!-- ======= Fin cabañas======= -->
-
-
-              <!-- ======= Inicio servicios======= -->
-
-          <div class="col-lg-4 col-md-6 portfolio-item filter-card">
-            <div class="portfolio-img"><img src="{% static 'assets/img/cabalgata.jpg' %}" class="img-fluid" alt=""></div>
-            <div class="portfolio-info">
-              <h4>Servicio</h4>
-              <p>Cabalgata</p>
-            </div>
-          </div>
-
-          <div class="col-lg-4 col-md-6 portfolio-item filter-card">
-            <div class="portfolio-img"><img src="{% static 'assets/img/pesca.jpg' %}" class="img-fluid" alt=""></div>
-            <div class="portfolio-info">
-              <h4>Servicio</h4>
-              <p>Pesca</p>
-            </div>
-          </div>
-
-          <div class="col-lg-4 col-md-6 portfolio-item filter-card">
-            <div class="portfolio-img"><img src="{% static 'assets/img/caminata.jpg' %}" class="img-fluid" alt=""></div>
-            <div class="portfolio-info">
-              <h4>Servicio</h4>
-              <p>Caminata</p>
-            </div>
-          </div>
+          {% endfor %}
+           
+           <!-- Mostrar los servicios -->
+           {% for service in services %}
+           <div class="col-lg-4 col-md-6 portfolio-item filter-card">
+             <div class="portfolio-img"><img src="{{ service.image.url }}" class="img-fluid" alt=""></div>
+             <div class="portfolio-info">
+               <h4>{{ service.name }}</h4>
+               <p>{{ service.description }}</p>
+               <p>$ {{ service.value}}</p>
+             </div>
+           </div>
+           {% endfor %}
         </div>
       </div>
     </section><!-- Fin servicios -->
@@ -184,33 +129,33 @@
 
   <!-- ======= Footer ======= -->
   <footer id="footer">
-
-
-
     <div class="footer-top">
       <div class="container">
         <div class="row">
-
           <div class="col-lg-3 col-md-6 footer-contact">
             <h3>Nature Vip</h3>
-              <strong>Telefono:</strong> +57 311 633 7569 55<br>
-              <strong>Email:</strong> Naturevipglamping@gmail.com<br>
-            </p>
+            <strong>Telefono:</strong> +57 311 633 7569 55<br>
+            <strong>Email:</strong> Naturevipglamping@gmail.com<br>
           </div>
         </div>
       </div>
     </div>
-
     <div class="container footer-bottom clearfix">
       <div class="copyright">
         &copy; Copyright <strong><span>Nature Vip</span></strong>. All Rights Reserved
       </div>
     </div>
+    <div class="container footer-bottom clearfix">
+      <div class="copyright">
+         <strong><span>Dirección</span></strong>.
+      </div>
+    </div>
   </footer><!-- End Footer -->
-
+  
   <div id="preloader"></div>
   <a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
-
+  
+  
   <!-- Vendor JS Files -->
   <script src="{% static 'assets/vendor/aos/aos.js' %}"></script>
   <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
@@ -219,10 +164,13 @@
   <script src="{% static 'assets/vendor/swiper/swiper-bundle.min.js' %}"></script>
   <script src="{% static 'assets/vendor/waypoints/noframework.waypoints.js' %}"></script>
   <script src="{% static 'assets/vendor/php-email-form/validate.js' %}"></script>
-
   <!-- Template Main JS File -->
   <script src="{% static 'assets/js/main.js' %}"></script>
 
+  <div id="map">
+    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3976.529833487488!2d-75.5422939006632!3d6.216068299808745!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e4428d3b59b6d0b%3A0x0!2s6%C2%B012'57.8%22N+75%C2%B032'23.0%22W!5e0!3m2!1sen!2sco!4v1647208566408!5m2!1sen!2sco" width="100%" height="500px" frameborder="0" style="border:0; border-radius: 10px; box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.15);" allowfullscreen=""></iframe>
+  </div>
+</script>
+  
 </body>
-
 </html>

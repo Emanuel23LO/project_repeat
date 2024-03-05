@@ -49,7 +49,7 @@
                             <a href="{% url 'payment_booking' booking.id %}" class="btn btn-primary btn-circle btn-sm">
                                 <i class="fas fa-plus"></i>
                             </a>
-                            <form action="{% url 'generate_pdf' booking.id %}" method="post">
+                            <form action="{% url 'generate_booking_pdf' booking.id %}" method="post">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-danger btn-circle btn-sm"> PDF </button>
                             </form>

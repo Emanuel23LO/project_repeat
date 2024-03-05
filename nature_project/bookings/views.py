@@ -1,6 +1,6 @@
 
 from datetime import datetime
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from customers.models import Customer
 from cabins.models import Cabin
@@ -23,6 +23,7 @@ from django.conf import settings
 import os
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
+from django.utils.dateparse import parse_date
 
 
 def bookings(request):    

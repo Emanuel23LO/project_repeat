@@ -6,38 +6,57 @@ from .forms import PaymentForm
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from bookings.models import Booking
+from customers.models import Customer
 from datetime import datetime
 from django.db import models
 from io import BytesIO
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from django.http import HttpResponse
-from datetime import datetime
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib import colors
+from reportlab.lib.units import inch
+from reportlab.lib.utils import ImageReader
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
 
-# def generate_payment_pdf(request, payment_id):
-#     # Obtener el pago detallado
-#     payment = Payment.objects.get(pk=payment_id)
+def generate_payment_pdf(request, payment_id):
+    # Obtener el pago detallado
+    payment = Payment.objects.get(pk=payment_id)
+    customer = payment.booking.customer
 
-#     # Crear el PDF
-#     buffer = BytesIO()
-#     p = canvas.Canvas(buffer, pagesize=letter)
+    # Crear el PDF
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter, leftMargin=0.75*inch)
+    styles = getSampleStyleSheet()
 
-#     # Agregar contenido al PDF
-#     p.drawString(100, 750, 'Detalles del pago:')
-#     p.drawString(100, 730, f'ID del pago: {payment.id}')
-#     p.drawString(100, 710, f'Método de pago: {payment.payment_method}')
-#     p.drawString(100, 690, f'Fecha: {payment.date}')
-#     p.drawString(100, 670, f'Valor: {payment.value}')
-
-#     # Cierra el lienzo
-#     p.showPage()
-#     p.save()
-
-#     buffer.seek(0)
-#     response = HttpResponse(buffer, content_type='application/pdf')
-#     response['Content-Disposition'] = 'attachment; filename="pago.pdf"'
+    title_style = ParagraphStyle(name='Title', fontSize=24, textColor='grey', alignment=1)
     
-#     return response
+    content = []
+    
+    content.append(Spacer(1, 24))
+
+    content.append(Paragraph('REPORTE DE PAGOS', title_style))
+
+    content.append(Spacer(1, 24))
+
+    content.append(Paragraph( 'Detalles del pago:', styles['Heading1']))
+    content.append(Paragraph( f'ID del pago: {payment.id}', styles['Normal']))
+    content.append(Paragraph( f'Método de pago: {payment.payment_method}', styles['Normal']))
+    content.append(Paragraph( f'Fecha: {payment.date}', styles['Normal']))
+    content.append(Paragraph( f'Valor: {payment.value}', styles['Normal']))
+
+    for _ in range(2):
+        content.append(Spacer(1, 12))
+    
+    content.append(Paragraph( f'Cliente: {customer.full_name}', styles['Normal']))
+
+    doc.build(content)
+
+    buffer.seek(0)
+    response_o = HttpResponse(buffer, content_type='application/pdf')
+    response_o['Content-Disposition'] = 'attachment; filename="pago.pdf"'
+    
+    return response_o
 
 
 def payment_booking(request, id):
