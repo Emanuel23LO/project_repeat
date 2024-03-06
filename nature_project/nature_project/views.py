@@ -15,11 +15,14 @@ import requests
 from cabins.models import Cabin
 from bookings.models import Booking
 from services.models import Service
+from customers.models import Customer
 
 def index(request):
+    
     count = Cabin.objects.count()
+    customer = Customer.objects.count()
     count_booking = Booking.objects.filter(status = "Reservado").count()
-    return render(request, 'index.html', {"count":count, "count_booking": count_booking})
+    return render(request, 'index.html', {"count":count, "count_booking": count_booking, "customer":customer})
 
 def landing(request):
     return render(request, 'landing.html')
