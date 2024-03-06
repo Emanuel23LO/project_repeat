@@ -16,13 +16,25 @@ from cabins.models import Cabin
 from bookings.models import Booking
 from services.models import Service
 from customers.models import Customer
+from payments.models import Payment
+from django.db.models import Sum
 
 def index(request):
-    
+
+    total_pagos = Payment.objects.aggregate(total=Sum('value'))
     count = Cabin.objects.count()
     customer = Customer.objects.count()
-    count_booking = Booking.objects.filter(status = "Reservado").count()
-    return render(request, 'index.html', {"count":count, "count_booking": count_booking, "customer":customer})
+    count_booking = Booking.objects.filter(status="Reservado").count()
+    count_booking2 = Booking.objects.filter(status="En ejecución").count()
+    total_reservas = count_booking + count_booking2
+    
+    return render(request, 'index.html', {
+        "count": count,
+        "count_booking": count_booking,
+        "count_booking2": count_booking2,
+        "total_reservas": total_reservas,
+        "customer": customer,'total_pagos': total_pagos['total']
+    });
 
 def landing(request):
     return render(request, 'landing.html')
