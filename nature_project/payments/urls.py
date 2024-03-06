@@ -10,5 +10,6 @@ urlpatterns = [
     path('edit/<int:payment_id>/', views.edit_payment, name='edit_payment'), 
     path('payment_booking/<int:id>/', views.payment_booking, name='payment_booking'),	
     path('payments/generate-pdf/<int:payment_id>/', views.generate_payment_pdf, name='generate_payment_pdf'),
+    path('payments/generate-pdf/', views.generate_payment_report, name='generate_payment_report')
     ]
 
