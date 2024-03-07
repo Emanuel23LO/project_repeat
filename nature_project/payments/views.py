@@ -278,3 +278,4 @@ def generate_payment_report(request):
     response_o['Content-Disposition'] = 'attachment; filename="pago.pdf"'
     
     return response_o
+
