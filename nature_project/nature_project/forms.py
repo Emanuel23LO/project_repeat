@@ -7,9 +7,14 @@ class RegisterForm(forms.Form):
     email = forms.EmailField(label='Correo electrónico', max_length=100, required=True)
     phone = forms.CharField(label='Celular', max_length=25, required=False)
     password = forms.CharField(label='Contraseña', max_length=100, widget=forms.PasswordInput, required=True)
+    password_confirmation = forms.CharField(label='Confirmar contraseña', max_length=100, widget=forms.PasswordInput)
     
-
+    
     def clean(self):
         cleaned_data = super().clean()
-        # Validaciones adicionales si son necesarias
+        password = cleaned_data.get('password')
+        password_confirmation = cleaned_data.get('password_confirmation')
+        
+        if password != password_confirmation:
+            raise forms.ValidationError('Las contraseñas no coinciden.')
         return cleaned_data
