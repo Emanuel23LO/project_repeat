@@ -170,8 +170,8 @@ def generate_payment_report(request):
     result = Payment.objects.filter(payment_method='Tarjeta Crédito').aggregate(total=Sum('value'))
     total_payment_card_c= result['total']
 
-    count_c = Payment.objects.filter(payment_method = "Targeta Débito").count()
-    result = Payment.objects.filter(payment_method='Targeta Débito').aggregate(total=Sum('value'))
+    count_c = Payment.objects.filter(payment_method = "Tarjeta Débito").count()
+    result = Payment.objects.filter(payment_method='Tarjeta Débito').aggregate(total=Sum('value'))
     total_payment_card_d= result['total']
 
     count_d = Payment.objects.filter(payment_method = "Transferencia").count()

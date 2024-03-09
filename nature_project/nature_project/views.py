@@ -18,9 +18,31 @@ from services.models import Service
 from customers.models import Customer
 from payments.models import Payment
 from django.db.models import Sum
+import calendar
+from django.db.models.functions import ExtractMonth
+import locale
 
 def index(request):
 
+    # --- Inicio grafica dashboard ---
+    ingresos_por_mes = Payment.objects.filter(status=True).annotate(
+    mes=ExtractMonth('date')
+    ).values('mes').annotate(total_ingresos=Sum('value'))
+    meses = range(1, 13)
+
+    # Agregar cada mes y su valor a la lista de datos
+    data = [["Mes", "Ingresos"]]
+    for mes in meses:
+        total_mes = 0
+        nombre_mes = calendar.month_name[mes]
+        for ingreso_mes in ingresos_por_mes:
+            if ingreso_mes['mes'] == mes:
+                total_mes = ingreso_mes['total_ingresos']
+                break
+        data.append([nombre_mes, total_mes])
+
+
+    # --- Fin grafica dashboard ---
     total_pagos = Payment.objects.aggregate(total=Sum('value'))
     count = Cabin.objects.count()
     customer = Customer.objects.count()
@@ -33,8 +55,9 @@ def index(request):
         "count_booking": count_booking,
         "count_booking2": count_booking2,
         "total_reservas": total_reservas,
-        "customer": customer,'total_pagos': total_pagos['total']
-    });
+        "customer": customer,'total_pagos': total_pagos['total'],
+        'data': json.dumps(data)
+    })
 
 def landing(request):
     return render(request, 'landing.html')
