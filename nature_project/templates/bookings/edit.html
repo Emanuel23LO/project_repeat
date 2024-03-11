@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="card shadow mb-4 p-4 ">
+<div class="card shadow mb-4 p-4">
     <div class="card-header py-3 mb-3">
         <h4 class="m-0 font-weight-bold text-primary">Editar reserva de cabañas y servicios</h4>
     </div>
@@ -9,83 +9,66 @@
         {% csrf_token %}
         <div class="d-flex">
             <div class="mb-3">
-                <label for="" class="form-label">Fecha inicio</label>
+                <label for="dates" class="form-label">Fecha inicio</label>
                 <input type="date" class="form-control" name="date_start" id="dates" aria-describedby="helpId"
                     placeholder="Ingresa una fecha de inicio" value="{{ booking.date_start|date:'Y-m-d' }}">
                 <small id="helpId" class="form-text text-muted"></small>
             </div>
             <div class="mb-3 mx-4">
-                <label for="" class="form-label">Fecha final</label>
+                <label for="date" class="form-label">Fecha final</label>
                 <input type="date" class="form-control" name="date_end" id="date" aria-describedby="helpId"
-                    placeholder="Ingresa una fecha de inicio" value="{{ booking.date_end|date:'Y-m-d' }}">
-                    <small id="helpId" class="form-text text-muted"></small>
-                </div>
+                    placeholder="Ingresa una fecha de fin" value="{{ booking.date_end|date:'Y-m-d' }}">
+                <small id="helpId" class="form-text text-muted"></small>
             </div>
-            
-            <div class="table-responsive">
-                <h5 class="text-primary font-weight-bold mt-4">Cabañas reservadas</h5>
-                <table class="table table-bordered" width="100%" cellspacing="0">
-                    <thead class="table-dark">
-                        <tr> 
-                            <th>Cabaña</th>
-                            <th>Valor</th>
-                            <th>Eliminar</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for cabin in cabins %}
-                        <tr id="{{cabin.id}}">
-                        <td>{{cabin.name}}</td>
-                        <td>{{cabin.value}}</td>
-                        <td>
-                            <button onclick="removeBooking(event)" class="btn btn-danger btn-circle btn-sm">
-                                <i class="fas fa-trash"></i>
-                            </button> 
-                        </td>
-                                
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>            
-            </div>
+        </div>
 
-            <div class="table-responsive">
-                <h5 class="text-primary font-weight-bold mt-4">Servicos reservados</h5>
-                <table class="table table-bordered" width="100%" cellspacing="0">
-                    <thead class="table-dark">
-                        <tr> 
-                            <th>Servicio</th>
-                            <th>Valor</th>
-                            <th>Eliminar</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for service in services %}
-                        <tr id="{{service.id}}">
+        <div class="table-responsive">
+            <h5 class="text-primary font-weight-bold mt-4">Cabañas reservadas</h5>
+            <table class="table table-bordered" width="100%" cellspacing="0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Cabaña</th>
+                        <th>Valor</th>
+                        <th>Imagen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cabin in cabins %}
+                    <tr>
+                        <td>{{ cabin.name }}</td>
+                        <td>{{ cabin.value }}</td>
+                        <td><img src="{{ cabin.image.url }}" alt="" width="100"></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
-                            <!-- campos de la fila -->
-                            <td>{{service.name}}</td>
-                            <td>{{service.value}}</td>  
-                          
-                            <td>
-                                <button onclick="removeBooking(event)" class="btn btn-danger btn-circle btn-sm">
-                                    <i class="fas fa-trash"></i>
-                                </button> 
-                            </td>
-                        </tr>
+        <div class="table-responsive">
+            <h5 class="text-primary font-weight-bold mt-4">Servicios reservados</h5>
+            <table class="table table-bordered" width="100%" cellspacing="0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Servicio</th>
+                        <th>Valor</th>
+                        <th>Imagen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for service in services %}
+                    <tr>
+                        <td>{{ service.name }}</td>
+                        <td>{{ service.value }}</td>
+                        <td><img src="{{ service.image.url }}" alt="" width="50"></td> 
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
 
-                        
-                        {% endfor %}
-                    </tbody>
-                </table>            
-            </div>
-
-        
         <div class="mb-3">
-            <label for="" class="form-label">Cliente</label>
-            <select class="form-control" name="customer" id="">
+            <label for="customer" class="form-label">Cliente</label>
+            <select class="form-control" name="customer" id="customer">
                 <option value="">Selecciona un cliente</option>
                 {% for customer in customers_list %}
                 <option value="{{ customer.id }}" {% if customer.id == booking.customer.id %} selected {% endif %}>{{ customer.full_name }}</option>
@@ -93,145 +76,161 @@
             </select>
         </div>
         <div class="mb-3">
-            <label for="" class="form-label">Cabañas</label>
+            <label for="cabin" class="form-label">Cabañas</label>
             <div class="d-flex">
-                <select class="form-control" name="cabin" id="">
+                <select class="form-control" name="cabin" id="cabin">
                     <option value="">Selecciona una cabaña</option>
                     {% for cabin in cabins_list %}
                     <option value="{{ cabin.id }}" {% if cabin.id == booking.cabin.id %} selected {% endif %}>{{ cabin.name }} - {{ cabin.value }}</option>
                     {% endfor %}
                 </select>
-                <a href="" onclick="addCabin(event)" class="btn btn-primary btn-icon-split mb-3">
+                <button type="button" onclick="addCabin(event)" class="btn btn-primary btn-icon-split mb-3">
                     <span class="icon text-white-50"><i class="fas fa-plus"></i></span>
-                </a>
+                </button>
             </div>
         </div>
         <div class="mb-3">
-            <label for="" class="form-label">Servicio</label>
+            <label for="service" class="form-label">Servicio</label>
             <div class="d-flex">
-                <select class="form-control" name="service" id="">
+                <select class="form-control" name="service" id="service">
                     <option value="">Selecciona un servicio</option>
                     {% for service in services_list %}
                     <option value="{{ service.id }}" {% if service.id == booking.service.id %} selected {% endif %}>{{ service.name }} - {{ service.value }}</option>
                     {% endfor %}
                 </select>
-                <a onclick="addService(event)" href="" class="btn btn-primary btn-icon-split mb-3">
+                <button type="button" onclick="addService(event)" class="btn btn-primary btn-icon-split mb-3">
                     <span class="icon text-white-50"><i class="fas fa-plus"></i></span>
-                </a>
+                </button>
             </div>
         </div>
-    </div>
-    <div class="card-header py-3 mb-3">
-        <h4 class="m-0 font-weight-bold text-primary">Detalle reserva de cabañas y servicios</h4>
-    </div>
-    <div class="table-responsive">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th scope="col">Cabaña</th>
-                    <th scope="col">Precio</th>
-                    <th scope="col">Eliminar</th>
-                </tr>
-            </thead>
-            <tbody id="bookings">
-            </tbody>
-            <thead>
-                <tr>
-                    <th>Total:</th>
-                    <th scope="col"><input class="text-success font-weight-bold" style="border: none;" type="text" name="totalValue" id="totalValue" readonly></th>
-                    <th></th>
-                </tr>
-            </thead>
-            <thead>
-            </thead>
-        </table>
-    </div>
-    <div class="text-center">
-        <button type="submit" class="btn btn-primary">Guardar cambios</button>
-    </div>
-</form>
+
+        <div class="card-header py-3 mb-3">
+            <h4 class="m-0 font-weight-bold text-primary">Detalle reserva de cabañas y servicios</h4>
+        </div>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Cabaña</th>
+                        <th scope="col">Precio</th>
+                        <th scope="col">Eliminar</th>
+                    </tr>
+                </thead>
+                <tbody id="bookings">
+                    <!-- Los detalles de la reserva se agregarán dinámicamente aquí -->
+                </tbody>
+                <thead>
+                    <tr>
+                        <th>Total:</th>
+                        <th scope="col"><input class="text-success font-weight-bold" style="border: none;" type="text" name="totalValue" id="totalValue" readonly></th>
+                        <th></th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+        <div class="text-center">
+            <!-- Formulario para eliminar cabañas y servicios -->
+            <form method="post">
+                {% csrf_token %}
+                <!-- Campo para identificadores de cabañas a eliminar -->
+                {% for cabin in cabins %}
+                    <input type="checkbox" name="cabinToDelete[]" value="{{ cabin.id }}"> {{ cabin.name }}<br>
+                {% endfor %}
+                <!-- Campo para identificadores de servicios a eliminar -->
+                {% for service in services %}
+                    <input type="checkbox" name="serviceToDelete[]" value="{{ service.id }}"> {{ service.name }}<br>
+                {% endfor %}
+                <!-- Botón para enviar el formulario de eliminación -->
+                <button type="submit" class="btn btn-danger">Eliminar seleccionados</button>
+            </form>
+            <!-- Botón para guardar cambios -->
+            <button type="submit" class="btn btn-primary">Guardar cambios</button>
+        </div>
+    </form>
 </div>
 
+
 <script>
-let cabins_add = [];
-let services_add = [];
-let total = 0;
-function addCabin(event) {
-    let dates = document.getElementById('date').value;
-    let date = document.getElementById('date').value;
-    event.preventDefault();
-    let cabinselect = $('select[name="cabin"]');
-    let cabinid = cabinselect.val();
-    let cabinname = cabinselect.find('option:selected').text().split(' - ')[0];
-    let cabinvalue = cabinselect.find('option:selected').text().split(' - ')[1];
-    cabins_add.push(cabinid);
-    totalBooking(parseFloat(cabinvalue));
-    $('#bookings').append(`
-        <tr id="${cabinid}">                               
-            <td>
-                <input type="hidden" name="cabinId[]" value="${cabinid}">
-                <input type="hidden" name="cabinValue[]" value="${cabinvalue}">
-                ${cabinname}
-            </td>
-            <td>${cabinvalue}</td>                
-            <td>
-                <a onclick='removeBooking(event, "cabin")' class="btn btn-danger btn-circle btn-sm">
-                    <i class="fas fa-trash"></i>
-                </a>
-            </td>
-        </tr>
-    `);
-}
+    let cabins_add = [];
+    let services_add = [];
+    let total = 0;
 
-function addService(event) {
-    event.preventDefault();
-    let serviceselect = $('select[name="service"]');
-    let serviceid = serviceselect.val();
-    let servicename = serviceselect.find('option:selected').text().split(' - ')[0];
-    let servicevalue = serviceselect.find('option:selected').text().split(' - ')[1];
-    services_add.push(serviceid);
-    totalBooking(parseFloat(servicevalue));
+    function addCabin(event) {
+        event.preventDefault();
+        let cabinSelect = $('#cabin');
+        let cabinId = cabinSelect.val();
+        let cabinName = cabinSelect.find('option:selected').text().split(' - ')[0];
+        let cabinValue = parseFloat(cabinSelect.find('option:selected').text().split(' - ')[1]);
 
-    $('#bookings').append(`
-        <tr id="${serviceid}">                                
-            <td>
-                <input type="hidden" name="serviceId[]" value="${serviceid}">
-                <input type="hidden" name="serviceValue[]" value="${servicevalue}">
-                ${servicename}
-            </td>
-            <td>${servicevalue}</td>                
-            <td>
-                <a onclick='removeBooking(event, "service")' class="btn btn-danger btn-circle btn-sm">
-                    <i class="fas fa-trash"></i>
-                </a>
-            </td>
-        </tr>
-    `);
-}
+        cabins_add.push(cabinId);
+        totalBooking(cabinValue);
 
-function totalBooking(value) {
-    total += value;
-    $('#totalValue').val(total);
-}
-    
-function removeBooking(event, type) {
-    event.preventDefault();        
-    let element = event.target.parentElement.parentElement.parentElement;
-    let id = element.id;          
-    if (type == 'cabin') {
-        cabins_add = cabins_add.filter(cabin => cabin != id);
-    } else {
-        services_add = services_add.filter(service => service != id);
+        $('#bookings').append(`
+            <tr id="${cabinId}">                               
+                <td>
+                    <input type="hidden" name="cabinId[]" value="${cabinId}">
+                    <input type="hidden" name="cabinValue[]" value="${cabinValue}">
+                    ${cabinName}
+                </td>
+                <td>${cabinValue}</td>                
+                <td>
+                    <button onclick='removeBooking(event, "cabin")' class="btn btn-danger btn-circle btn-sm">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `);
     }
-    element.remove();
-    let value = parseFloat(element.children[1].textContent);        
-    total -= value;
-    $('#totalValue').val(total);
-}
 
+    function addService(event) {
+        event.preventDefault();
+        let serviceSelect = $('#service');
+        let serviceId = serviceSelect.val();
+        let serviceName = serviceSelect.find('option:selected').text().split(' - ')[0];
+        let serviceValue = parseFloat(serviceSelect.find('option:selected').text().split(' - ')[1]);
 
+        services_add.push(serviceId);
+        totalBooking(serviceValue);
 
+        $('#bookings').append(`
+            <tr id="${serviceId}">                                
+                <td>
+                    <input type="hidden" name="serviceId[]" value="${serviceId}">
+                    <input type="hidden" name="serviceValue[]" value="${serviceValue}">
+                    ${serviceName}
+                </td>
+                <td>${serviceValue}</td>                
+                <td>
+                    <button onclick='removeBooking(event, "service")' class="btn btn-danger btn-circle btn-sm">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `);
+    }
 
+    function totalBooking(value) {
+        total += value;
+        $('#totalValue').val(total);
+    }
 
+    function removeBooking(event, type) {
+        event.preventDefault();        
+        let element = $(event.target).closest('tr');
+        let id = element.attr('id');          
+
+        if (type == 'cabin') {
+            cabins_add = cabins_add.filter(cabin => cabin != id);
+        } else {
+            services_add = services_add.filter(service => service != id);
+        }
+        
+        element.remove();
+
+        let value = parseFloat(element.find('td:eq(1)').text());        
+        total -= value;
+        $('#totalValue').val(total);
+    }
 </script>
+
 {% endblock %}

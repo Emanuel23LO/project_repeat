@@ -177,22 +177,13 @@ def detail_booking(request, booking_id):
     return render(request, 'bookings/detail.html', {'booking': booking, 'booking_cabins': booking_cabins, 'booking_services': booking_services, 'payments': payments})
 
 
-def delete_booking(request, booking_id):
-    booking = Booking.objects.get(pk=booking_id)
-    try:
-        booking.delete()        
-        messages.success(request, 'Reserva eliminada correctamente.')
-    except:
-        messages.error(request, 'No se puede eliminar la reserva porque está asociado a otra tabla.')
-    return redirect('bookings')
-
 from datetime import datetime
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
 from django.utils.dateparse import parse_date
 
 def edit_booking(request, booking_id):
-    booking = get_object_or_404(Booking, pk=booking_id) 
+    booking = get_object_or_404(Booking, pk=booking_id)
     cabins = Cabin.objects.filter(booking_cabin__booking=booking)
     services = Service.objects.filter(booking_service__booking=booking)
 
@@ -208,35 +199,120 @@ def edit_booking(request, booking_id):
 
         booking.date_start = date
         booking.date_end = date_end
-        booking.value = request.POST.get('totalValue', '')
+
+        try:
+            booking.value = int(request.POST.get('totalValue', 0))
+        except ValueError:
+            # Si el valor no es un número válido, asignar un valor predeterminado
+            booking.value = 0
+
         booking.customer_id = request.POST.get('customer', '')
         
         booking.save()
-        
+                
         booking_cabins = Booking_cabin.objects.filter(booking=booking)
         booking_services = Booking_service.objects.filter(booking=booking)
-        
-        booking_cabins.delete()
-        booking_services.delete()
+
+        # Iterar sobre las entradas existentes de cabañas y actualizarlas si es necesario
+        for booking_cabin in booking_cabins:
+            cabin_id = booking_cabin.cabin_id
+            cabin_value = request.POST.get(f'cabinValue[{cabin_id}]', '')
+            try:
+                cabin_value = float(cabin_value)
+            except ValueError:
+                cabin_value = 0
+
+            booking_cabin.value = cabin_value
+            booking_cabin.save()
+
+        # Iterar sobre las entradas existentes de servicios y actualizarlas si es necesario
+        for booking_service in booking_services:
+            service_id = booking_service.service_id
+            service_value = request.POST.get(f'serviceValue[{service_id}]', '')
+            try:
+                service_value = float(service_value)
+            except ValueError:
+                service_value = 0
+
+            booking_service.value = service_value
+            booking_service.save()
+
+        # Recalcular el total de la reserva
+        total = 0
+
+        # Sumar los valores de las cabañas existentes al total
+        for booking_cabin in booking_cabins:
+            total += booking_cabin.value
+
+        # Sumar los valores de los servicios existentes al total
+        for booking_service in booking_services:
+            total += booking_service.value
 
         for cabin_id in request.POST.getlist('cabinId[]'):
-            cabin = get_object_or_404(Cabin, pk=cabin_id)
             cabin_value = request.POST.get(f'cabinValue[{cabin_id}]', '')
-            booking_cabin = Booking_cabin.objects.create(
-                booking=booking,
-                cabin=cabin,
-                value=cabin_value
-            )
+            try:
+                cabin_value = float(cabin_value)
+                total += cabin_value
+            except ValueError:
+                # Manejar el caso en el que el valor no sea un número válido
+                pass
 
+        # Iterar sobre los nuevos valores de servicios y agregarlos al total
         for service_id in request.POST.getlist('serviceId[]'):
-            service = get_object_or_404(Service, pk=service_id)
             service_value = request.POST.get(f'serviceValue[{service_id}]', '')
-            booking_service = Booking_service.objects.create(
-                booking=booking,
-                service=service,
-                value=service_value
-            )
+            try:
+                service_value = float(service_value)
+                total += service_value
+            except ValueError:
+                # Manejar el caso en el que el valor no sea un número válido
+                pass
 
+        # Eliminar cabañas seleccionadas
+        cabins_to_delete = request.POST.getlist('cabinToDelete[]')
+        for cabin_id in cabins_to_delete:
+            Booking_cabin.objects.filter(booking=booking, cabin_id=cabin_id).delete()
+
+        # Eliminar servicios seleccionados
+        services_to_delete = request.POST.getlist('serviceToDelete[]')
+        for service_id in services_to_delete:
+            Booking_service.objects.filter(booking=booking, service_id=service_id).delete()
+
+        # Actualizar el campo de total en la reserva con el nuevo valor calculado
+        booking.total = total
+        booking.save()
+
+        # Luego, iterar sobre los nuevos valores de cabañas y crear nuevas entradas si es necesario
+        for cabin_id in request.POST.getlist('cabinId[]'):
+            if not Booking_cabin.objects.filter(booking=booking, cabin_id=cabin_id).exists():
+                cabin = get_object_or_404(Cabin, pk=cabin_id)
+                cabin_value = request.POST.get(f'cabinValue[{cabin_id}]', '')
+                try:
+                    cabin_value = float(cabin_value)
+                except ValueError:
+                    cabin_value = 0
+
+                Booking_cabin.objects.create(
+                    booking=booking,
+                    cabin=cabin,
+                    value=cabin_value
+                )
+
+        # Finalmente, iterar sobre los nuevos valores de servicios y crear nuevas entradas si es necesario
+        for service_id in request.POST.getlist('serviceId[]'):
+            if not Booking_service.objects.filter(booking=booking, service_id=service_id).exists():
+                service = get_object_or_404(Service, pk=service_id)
+                service_value = request.POST.get(f'serviceValue[{service_id}]', '')
+                try:
+                    service_value = float(service_value)
+                except ValueError:
+                    service_value = 0
+
+                Booking_service.objects.create(
+                    booking=booking,
+                    service=service,
+                    value=service_value
+                )
+        
         messages.success(request, 'Reserva editada con éxito.')
         return redirect('bookings')
 
