@@ -113,21 +113,42 @@
                     <tr>
                         <th scope="col">Cabaña</th>
                         <th scope="col">Precio</th>
-                        <th scope="col">Eliminar</th>
                     </tr>
                 </thead>
                 <tbody id="bookings">
-                    <!-- Los detalles de la reserva se agregarán dinámicamente aquí -->
+                    <!-- Aquí se agregarán dinámicamente las cabañas existentes -->
+                    {% for cabin in cabins %}
+                    <tr id="cabin{{ cabin.id }}">
+                        <td>{{ cabin.name }}</td>
+                        <td>{{ cabin.value }}</td>
+                        <td>                          
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    <!-- Aquí se agregarán dinámicamente los servicios existentes -->
+                    {% for service in services %}
+                    <tr id="service{{ service.id }}">
+                        <td>{{ service.name }}</td>
+                        <td>{{ service.value }}</td>
+                        <td>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
                 </tbody>
+                <!-- Fila para mostrar el total -->
                 <thead>
                     <tr>
                         <th>Total:</th>
-                        <th scope="col"><input class="text-success font-weight-bold" style="border: none;" type="text" name="totalValue" id="totalValue" readonly></th>
+                        <th scope="col">
+                            <input class="text-success font-weight-bold" style="border: none;" type="text" name="totalValue" id="totalValue" value="{{ total }}" readonly>
+                        </th>
                         <th></th>
                     </tr>
                 </thead>
             </table>
         </div>
+        
         <div class="text-center">
             <!-- Formulario para eliminar cabañas y servicios -->
             <form method="post">
@@ -146,8 +167,8 @@
             <!-- Botón para guardar cambios -->
             <button type="submit" class="btn btn-primary">Guardar cambios</button>
         </div>
-    </form>
-</div>
+        </form>
+        </div>
 
 
 <script>
@@ -172,7 +193,7 @@
                     <input type="hidden" name="cabinValue[]" value="${cabinValue}">
                     ${cabinName}
                 </td>
-                <td>${cabinValue}</td>                
+                <td class="cabin-value">${cabinValue}</td>                
                 <td>
                     <button onclick='removeBooking(event, "cabin")' class="btn btn-danger btn-circle btn-sm">
                         <i class="fas fa-trash"></i>
@@ -199,7 +220,7 @@
                     <input type="hidden" name="serviceValue[]" value="${serviceValue}">
                     ${serviceName}
                 </td>
-                <td>${serviceValue}</td>                
+                <td class="service-value">${serviceValue}</td>                
                 <td>
                     <button onclick='removeBooking(event, "service")' class="btn btn-danger btn-circle btn-sm">
                         <i class="fas fa-trash"></i>
@@ -211,7 +232,7 @@
 
     function totalBooking(value) {
         total += value;
-        $('#totalValue').val(total);
+        $('#totalValue').val(total.toFixed(2)); // Actualizar el valor con 2 decimales
     }
 
     function removeBooking(event, type) {
@@ -229,8 +250,45 @@
 
         let value = parseFloat(element.find('td:eq(1)').text());        
         total -= value;
-        $('#totalValue').val(total);
+        $('#totalValue').val(total.toFixed(2)); // Actualizar el valor con 2 decimales
     }
 </script>
+
+<!-- Tu contenido HTML aquí -->
+
+
+<script>
+    $(document).ready(function() {
+    let initialTotal = parseFloat($('#totalValue').val()) || 0;
+
+    // Sumar los valores de cabañas existentes
+    $('.cabin-value').each(function() {
+        initialTotal += parseFloat($(this).text());
+    });
+
+    // Sumar los valores de servicios existentes
+    $('.service-value').each(function() {
+        initialTotal += parseFloat($(this).text());
+    });
+
+    // Sumar los valores de cabañas agregadas
+    $('input[name="cabinValue[]"]').each(function() {
+        initialTotal += parseFloat($(this).val());
+    });
+
+    // Sumar los valores de servicios agregados
+    $('input[name="serviceValue[]"]').each(function() {
+        initialTotal += parseFloat($(this).val());
+    });
+
+    total = initialTotal;
+    $('#totalValue').val(total.toFixed(2)); // Actualizar el valor con 2 decimales
+});
+
+</script>
+
+</body>
+</html>
+
 
 {% endblock %}
