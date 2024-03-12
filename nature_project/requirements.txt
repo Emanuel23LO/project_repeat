@@ -1,7 +1,8 @@
-authlib ~= 1.2
-django ~= 4.2
-python-dotenv ~= 1.0
-requests ~= 2.31
-
+authlib~=1.2
+django~=4.2
+python-dotenv~=1.0
+requests~=2.31
+reportlab
+pillow
 
 # clave de seguridad auth0 RR6T8EYWNRZNZDFJPD78546Y
