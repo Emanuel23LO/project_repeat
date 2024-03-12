@@ -224,7 +224,8 @@ def edit_booking(request, booking_id):
         total -= service.value
 
     # Actualizar el campo de total en la reserva con el nuevo valor calculado
-    booking.total = total
+    booking.value = int(total)
+    
     booking.save()
 
     # Eliminar cabañas seleccionadas
