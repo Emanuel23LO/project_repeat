@@ -189,7 +189,7 @@ def edit_booking(request, booking_id):
 
     customers_list = Customer.objects.all()
     cabins_list = Cabin.objects.all()
-    services_list = Service.objects.all()    
+    services_list = Service.objects.all()
 
     total = sum(cabin.value for cabin in cabins) + sum(service.value for service in services)
 
@@ -224,8 +224,7 @@ def edit_booking(request, booking_id):
         total -= service.value
 
     # Actualizar el campo de total en la reserva con el nuevo valor calculado
-    booking.value = int(total)
-    
+    booking.total = total
     booking.save()
 
     # Eliminar cabañas seleccionadas
@@ -254,7 +253,6 @@ def edit_booking(request, booking_id):
                 value=cabin_value
             )
 
-    # Finalmente, iterar sobre los nuevos valores de servicios y crear nuevas entradas si es necesario
     for service_id in request.POST.getlist('serviceId[]'):
         if not Booking_service.objects.filter(booking=booking, service_id=service_id).exists():
             service = get_object_or_404(Service, pk=service_id)
@@ -269,7 +267,28 @@ def edit_booking(request, booking_id):
                 service=service,
                 value=service_value
             )
-    
+
+    # Recalcular el valor total después de crear las nuevas asociaciones
+
+    # Actualizar el campo de valor total en la reserva con el nuevo valor calculado
+    booking.value = int(total)
+    booking.save()
+
+    # Eliminar cabañas y servicios seleccionados para eliminación
+    for cabin_id in cabins_to_delete:
+        Booking_cabin.objects.filter(booking=booking, cabin_id=cabin_id).delete()
+
+    for service_id in services_to_delete:
+        Booking_service.objects.filter(booking=booking, service_id=service_id).delete()
+
+
+    cabins = Cabin.objects.filter(booking_cabin__booking=booking)
+    services = Service.objects.filter(booking_service__booking=booking)
+    total = sum(cabin.value for cabin in cabins) + sum(service.value for service in services)
+
+    # Actualizar el campo de valor total en la reserva con el nuevo valor calculado
+    booking.value = int(total)
+    booking.save()
     messages.success(request, 'Reserva editada con éxito.')
 
     # Comprobamos si se realizó alguna edición
