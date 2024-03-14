@@ -24,6 +24,7 @@ import os
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
 from django.utils.dateparse import parse_date
+from django.http import JsonResponse
 
 
 def bookings(request):    
@@ -203,7 +204,7 @@ def edit_booking(request, booking_id):
         booking.date_start = new_date_start
         booking.date_end = new_date_end
         booking.save()
-        
+
     booking = get_object_or_404(Booking, pk=booking_id)
     cabins = Cabin.objects.filter(booking_cabin__booking=booking)
     services = Service.objects.filter(booking_service__booking=booking)
@@ -305,3 +306,17 @@ def edit_booking(request, booking_id):
         return redirect('bookings')
     else:
         return render(request, 'bookings/edit.html', {'booking': booking, 'customers_list': customers_list, 'cabins_list': cabins_list, 'services_list': services_list, 'cabins': cabins, 'services': services, 'total': total})
+    
+
+def cancel_booking(request, booking_id):
+    # Obtener la reserva
+    booking = get_object_or_404(Booking, pk=booking_id)
+    
+    if request.method == 'POST':
+        # Cambiar el estado de la reserva a "Cancelado"
+        booking.status = 'Cancelado'
+        booking.save()
+        # Redirigir a la página de reservas
+        return redirect('bookings')
+    # Redirigir de vuelta a la página de edición si no es una solicitud POST
+    return redirect('edit_booking', booking_id=booking_id)
