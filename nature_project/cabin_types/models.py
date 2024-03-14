@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.db import models
 
 class Cabin_type(models.Model):
@@ -7,3 +8,6 @@ class Cabin_type(models.Model):
 
     def __str__(self):
         return self.name
+    
+    
+

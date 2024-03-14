@@ -177,11 +177,6 @@ def detail_booking(request, booking_id):
     return render(request, 'bookings/detail.html', {'booking': booking, 'booking_cabins': booking_cabins, 'booking_services': booking_services, 'payments': payments})
 
 
-from datetime import datetime
-from django.shortcuts import get_object_or_404
-from django.shortcuts import render
-from django.utils.dateparse import parse_date
-
 def edit_booking(request, booking_id):
     booking = get_object_or_404(Booking, pk=booking_id)
     cabins = Cabin.objects.filter(booking_cabin__booking=booking)

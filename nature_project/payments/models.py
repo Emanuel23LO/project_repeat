@@ -8,6 +8,6 @@ class Payment(models.Model):
     booking = models.ForeignKey('bookings.Booking', on_delete=models.DO_NOTHING)
     status = models.BooleanField(default=True)
 
-def __str__(self):
-    return self.value
+    def __str__(self):
+        return self.value
 

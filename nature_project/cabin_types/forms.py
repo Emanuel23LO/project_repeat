@@ -1,5 +1,5 @@
 from django import forms
-from . models import Cabin_type
+from .models import Cabin_type
 
 class Cabin_typeForm(forms.ModelForm):
     class Meta:
@@ -11,4 +11,9 @@ class Cabin_typeForm(forms.ModelForm):
         }
         widgets = {
             'name': forms.TextInput(attrs={'placeholder': 'Ingresa el nombre'}),
+        }
+        error_messages = {
+            'name': {
+                'unique': "Ya existe ese tipo de cabaña con este nombre."
+            }
         }

@@ -16,10 +16,14 @@ def change_status_cabin_type(request, cabin_type_id):
     return redirect('cabin_types')
 
 def create_cabin_type(request):
-    form = Cabin_typeForm(request.POST or None)
-    if form.is_valid():
-        form.save()
-        return redirect('cabin_types')    
+    if request.method == 'POST':
+        form = Cabin_typeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'El tipo de la cabaña se ha creado correctamente.')
+            return redirect('cabin_types')
+    else:
+        form = Cabin_typeForm()
     return render(request, 'cabin_types/create.html', {'form': form})
 
 def detail_cabin_type(request, cabin_type_id):

@@ -19,6 +19,7 @@ def create_cabin(request):
     form = CabinForm(request.POST or None, request.FILES or None)
     if form.is_valid():
         form.save()
+        messages.success(request, 'La cabaña se ha creado correctamente.')
         return redirect('cabins')    
     return render(request, 'cabins/create.html', {'form': form})
 
