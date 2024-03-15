@@ -24,6 +24,7 @@ import os
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
 from django.utils.dateparse import parse_date
+from django.http import JsonResponse
 
 
 def bookings(request):    
@@ -36,7 +37,6 @@ def create_booking(request):
     services_list = Service.objects.all()    
     
     if request.method == 'POST':
-        # Verificar si las fechas ingresadas son válidas
         date_start_str = request.POST.get('date_start', '')
         date_end_str = request.POST.get('date_end', '')
 
@@ -56,21 +56,32 @@ def create_booking(request):
                 error_message = 'La fecha de inicio debe ser anterior a la fecha de finalización'
                 return render(request, 'bookings/create.html', {'error_message': error_message, 'customers_list': customers_list , 'cabins_list': cabins_list, 'services_list': services_list})
 
-            # Crear la reserva si las fechas son válidas
-            booking = Booking.objects.create(                        
-                date_booking=datetime.now().date(),                                   
-                date_start=date_start,
-                date_end=date_end,
-                value=request.POST['totalValue'],
-                status='Reservado',
-                customer_id=request.POST['customer']
-            )
-            booking.save()        
+            total_value = 0
+
             cabins_Id = request.POST.getlist('cabinId[]')
             cabins_value = request.POST.getlist('cabinValue[]')
             services_Id = request.POST.getlist('serviceId[]')
             services_value = request.POST.getlist('serviceValue[]')       
-                    
+
+            for i in range(len(cabins_Id)):            
+                cabin = Cabin.objects.get(pk=int(cabins_Id[i]))
+                # Calcular el valor de la cabaña multiplicando por la cantidad de días de estadía
+                total_value += cabin.value * (date_end - date_start).days
+
+            for i in range(len(services_Id)):
+                service = Service.objects.get(pk=int(services_Id[i]))
+                total_value += service.value
+
+            booking = Booking.objects.create(                        
+                date_booking=datetime.now().date(),                                   
+                date_start=date_start,
+                date_end=date_end,
+                value=total_value,
+                status='Reservado',
+                customer_id=request.POST['customer']
+            )
+            booking.save()        
+
             for i in range(len(cabins_Id)):            
                 cabin = Cabin.objects.get(pk=int(cabins_Id[i]))
                 booking_cabins = Booking_cabin.objects.create(
@@ -96,7 +107,6 @@ def create_booking(request):
             return render(request, 'bookings/create.html', {'error_message': error_message, 'customers_list': customers_list , 'cabins_list': cabins_list, 'services_list': services_list})
 
     return render(request, 'bookings/create.html', {'customers_list': customers_list , 'cabins_list': cabins_list, 'services_list': services_list})
-
 
 def generate_pdf(request, booking_id):
     # Obtener la reserva detallada
@@ -179,14 +189,29 @@ def detail_booking(request, booking_id):
 
 def edit_booking(request, booking_id):
     booking = get_object_or_404(Booking, pk=booking_id)
+    
+    if request.method == 'POST':
+        # Capturar los nuevos valores de fecha del formulario
+        new_date_start = request.POST.get('date_start')
+        new_date_end = request.POST.get('date_end')
+        
+        # Actualizar las fechas de inicio y fin de la reserva
+        booking.date_start = new_date_start
+        booking.date_end = new_date_end
+        booking.save()
+
+    booking = get_object_or_404(Booking, pk=booking_id)
     cabins = Cabin.objects.filter(booking_cabin__booking=booking)
     services = Service.objects.filter(booking_service__booking=booking)
 
     customers_list = Customer.objects.all()
     cabins_list = Cabin.objects.all()
-    services_list = Service.objects.all()
+    services_list = Service.objects.all()    
 
     total = sum(cabin.value for cabin in cabins) + sum(service.value for service in services)
+
+    for cabin in cabins:
+        total += cabin.value * (booking.date_end - booking.date_start).days
 
     # Sumar los valores de las nuevas cabañas seleccionadas
     for cabin_id in request.POST.getlist('cabinId[]'):
@@ -206,6 +231,10 @@ def edit_booking(request, booking_id):
         except ValueError:
             pass
 
+    booking.value = int(total)
+    
+    booking.save()
+
     # Restar los valores de las cabañas eliminadas
     cabins_to_delete = request.POST.getlist('cabinToDelete[]')
     for cabin_id in cabins_to_delete:
@@ -218,7 +247,22 @@ def edit_booking(request, booking_id):
         service = get_object_or_404(Service, pk=service_id)
         total -= service.value
 
-    # Crear nuevas asociaciones para cabañas y servicios antes de actualizar el valor total
+    # Actualizar el campo de total en la reserva con el nuevo valor calculado
+    booking.value = int(total)
+    
+    booking.save()
+
+    # Eliminar cabañas seleccionadas
+    cabins_to_delete = request.POST.getlist('cabinToDelete[]')
+    for cabin_id in cabins_to_delete:
+        Booking_cabin.objects.filter(booking=booking, cabin_id=cabin_id).delete()
+
+    # Eliminar servicios seleccionados
+    services_to_delete = request.POST.getlist('serviceToDelete[]')
+    for service_id in services_to_delete:
+        Booking_service.objects.filter(booking=booking, service_id=service_id).delete()
+
+    # Luego, iterar sobre los nuevos valores de cabañas y crear nuevas entradas si es necesario
     for cabin_id in request.POST.getlist('cabinId[]'):
         if not Booking_cabin.objects.filter(booking=booking, cabin_id=cabin_id).exists():
             cabin = get_object_or_404(Cabin, pk=cabin_id)
@@ -234,6 +278,7 @@ def edit_booking(request, booking_id):
                 value=cabin_value
             )
 
+    # Finalmente, iterar sobre los nuevos valores de servicios y crear nuevas entradas si es necesario
     for service_id in request.POST.getlist('serviceId[]'):
         if not Booking_service.objects.filter(booking=booking, service_id=service_id).exists():
             service = get_object_or_404(Service, pk=service_id)
@@ -248,28 +293,7 @@ def edit_booking(request, booking_id):
                 service=service,
                 value=service_value
             )
-
-    # Recalcular el valor total después de crear las nuevas asociaciones
-
-    # Actualizar el campo de valor total en la reserva con el nuevo valor calculado
-    booking.value = int(total)
-    booking.save()
-
-    # Eliminar cabañas y servicios seleccionados para eliminación
-    for cabin_id in cabins_to_delete:
-        Booking_cabin.objects.filter(booking=booking, cabin_id=cabin_id).delete()
-
-    for service_id in services_to_delete:
-        Booking_service.objects.filter(booking=booking, service_id=service_id).delete()
-
-
-    cabins = Cabin.objects.filter(booking_cabin__booking=booking)
-    services = Service.objects.filter(booking_service__booking=booking)
-    total = sum(cabin.value for cabin in cabins) + sum(service.value for service in services)
-
-    # Actualizar el campo de valor total en la reserva con el nuevo valor calculado
-    booking.value = int(total)
-    booking.save()
+    
     messages.success(request, 'Reserva editada con éxito.')
 
     # Comprobamos si se realizó alguna edición
@@ -277,3 +301,17 @@ def edit_booking(request, booking_id):
         return redirect('bookings')
     else:
         return render(request, 'bookings/edit.html', {'booking': booking, 'customers_list': customers_list, 'cabins_list': cabins_list, 'services_list': services_list, 'cabins': cabins, 'services': services, 'total': total})
+    
+
+def cancel_booking(request, booking_id):
+    # Obtener la reserva
+    booking = get_object_or_404(Booking, pk=booking_id)
+    
+    if request.method == 'POST':
+        # Cambiar el estado de la reserva a "Cancelado"
+        booking.status = 'Cancelado'
+        booking.save()
+        # Redirigir a la página de reservas
+        return redirect('bookings')
+    # Redirigir de vuelta a la página de edición si no es una solicitud POST
+    return redirect('edit_booking', booking_id=booking_id)
