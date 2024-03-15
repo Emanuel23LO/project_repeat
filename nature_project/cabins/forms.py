@@ -23,3 +23,8 @@ class CabinForm(forms.ModelForm):
             'value': forms.TextInput(attrs={'placeholder': 'Ingresa el valor'}),
             'image': forms.FileInput(attrs={'placeholder': 'Ingresa la imagen de la cabaña'}),   
         }
+        error_messages = {
+            'cabin_type': {
+                'unique': "Ya existe ese tipo de cabaña con este nombre."
+            }
+        }

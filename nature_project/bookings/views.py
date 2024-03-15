@@ -37,13 +37,21 @@ def create_booking(request):
     services_list = Service.objects.all()    
     
     if request.method == 'POST':
+        # Obtener los datos del formulario
         date_start_str = request.POST.get('date_start', '')
         date_end_str = request.POST.get('date_end', '')
+        customer_id = request.POST.get('customer', None)  # Obtener el ID del cliente seleccionado
+        cabins_selected = request.POST.getlist('cabinId[]', None)  # Obtener las cabañas seleccionadas
 
-        if not date_start_str or not date_end_str:
-            error_message = 'Todos los campos son obligatorios'
+        # Validar que se haya seleccionado al menos una cabaña
+        if not cabins_selected:
+            error_message = 'Por favor, selecciona al menos una cabaña.'
             return render(request, 'bookings/create.html', {'error_message': error_message, 'customers_list': customers_list , 'cabins_list': cabins_list, 'services_list': services_list})
 
+        # Validar que se haya seleccionado un cliente
+        if not customer_id:
+            error_message = 'Por favor, selecciona un cliente.'
+            return render(request, 'bookings/create.html', {'error_message': error_message, 'customers_list': customers_list , 'cabins_list': cabins_list, 'services_list': services_list})
         try:
             date_start = datetime.strptime(date_start_str, '%Y-%m-%d')
             date_end = datetime.strptime(date_end_str, '%Y-%m-%d')
@@ -248,9 +256,7 @@ def edit_booking(request, booking_id):
         total -= service.value
 
     # Actualizar el campo de total en la reserva con el nuevo valor calculado
-    booking.value = int(total)
     
-    booking.save()
 
     # Eliminar cabañas seleccionadas
     cabins_to_delete = request.POST.getlist('cabinToDelete[]')
