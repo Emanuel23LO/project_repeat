@@ -28,7 +28,7 @@ def create_customer(request):
         except:
             messages.error(request, 'Ocurrió un error al crear el cliente.')        
         return redirect('customers')    
-    return render(request, 'customers/editar.html', {'form': form})
+    return render(request, 'customers/create.html', {'form': form})
 
 def detail_customer(request, customer_id):
     customer = Customer.objects.get(pk=customer_id)
